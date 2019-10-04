@@ -3,7 +3,7 @@ from CreacionEstacionamiento.forms import CrearForm
 from Core.models import Estacionamiento
 from django.contrib.auth.decorators import user_passes_test
 # Create your views here.
-@user_passes_test(lambda u: u.is_authenticated and u.es_arrendador,login_url='home')
+#@user_passes_test(lambda u: u.is_authenticated and u.es_arrendador,login_url='home')
 def crear(request):
     info = CrearForm()
     if request.method == 'POST':

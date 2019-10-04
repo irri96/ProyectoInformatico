@@ -1,0 +1,520 @@
+
+
+{% extends 'base.html' %}
+
+
+{% block titulo %}
+	Crear viaje
+{% endblock %}
+
+<style type="css">
+
+
+
+@media screen and (max-width: 992px) {
+  table {
+    display: block;
+  }
+  table > *, table tr, table td, table th {
+    display: block;
+  }
+  table thead {
+    display: none;
+  }
+  table tbody tr {
+    height: auto;
+    padding: 37px 0;
+  }
+  table tbody tr td {
+    padding-left: 40% !important;
+    margin-bottom: 24px;
+  }
+  table tbody tr td:last-child {
+    margin-bottom: 0;
+  }
+  table tbody tr td:before {
+    font-size: 14px;
+    color: #999999;
+    line-height: 1.2;
+    font-weight: unset;
+    position: absolute;
+    width: 40%;
+    left: 30px;
+    top: 0;
+  }
+  table tbody tr td:nth-child(1):before {
+    content: "Date";
+  }
+  table tbody tr td:nth-child(2):before {
+    content: "Order ID";
+  }
+  table tbody tr td:nth-child(3):before {
+    content: "Name";
+  }
+  table tbody tr td:nth-child(4):before {
+    content: "Price";
+  }
+  table tbody tr td:nth-child(5):before {
+    content: "Quantity";
+  }
+  table tbody tr td:nth-child(6):before {
+    content: "Total";
+  }
+
+  tbody tr {
+    font-size: 14px;
+  }
+}
+
+
+</style>
+
+{% block content %}
+    {% if mensaje %}
+        <h2 id="mensaje-a-borrar">{{ mensaje }}</h2>
+    {% endif %}
+     <form  enctype="multipart/form-data" action="" method="POST"> {% csrf_token %}
+         <div id="info1">
+
+            {{ form}}
+
+         </div>
+         <div id="info2" style="display: none">
+
+            <div id="elementos"> </div>
+
+         </div>
+
+    </form>
+
+<!-- Trigger/Open The Modal -->
+
+
+<!-- The Modal -->
+<div id="myModal" class="modal" style="width: 100%;height: 100%;position: center" >
+
+  <!-- Modal content -->
+  <div class="modal-content" style="width: 80%;height: 90%;position: center;">
+    <span class="close-m">&times;</span>
+
+    <div id="map-canvas" style="height: 90%;width: 100%;position: center"></div>
+  </div>
+
+</div>
+<div id="tarModal" class="modal" style="width: 100%;height: 100%;position: center" >
+
+  <!-- Modal content -->
+  <div class="modal-content" style="width: 80%;height: 90%;position: center;">
+    <span id="tarClose" class="close-m">&times;</span>
+
+      <p class="no-borrar">  </p>
+  </div>
+
+</div>
+
+<script>
+// Get the modal
+//var modal = document.getElementById("myModal");
+
+// Get the button that opens the modal
+{#var btn = document.getElementById("myBtn");#}
+
+// Get the <span> element that closes the modal
+{#var span = document.getElementsByClassName("close-m")[0];#}
+
+// When the user clicks the button, open the modal
+btn.onclick = function() {
+    var origen = document.getElementById('id_ciudad_origen');
+    var destino = document.getElementById('id_ciudad_destino');
+    if(!origen.checkValidity() || !destino.checkValidity()){
+        if(document.getElementById('info1').style.display=="none"){
+            document.getElementById('info1').style.display="inline";
+            document.getElementById('info2').style.display="none";
+        }
+        origen.reportValidity();
+        destino.reportValidity();
+        return;
+    }
+    for (var i=0;i<waypoints.length;i++){
+        if(!waypoints[i].checkValidity()){
+            if(document.getElementById('info2').style.display=="none"){
+                document.getElementById('info2').style.display="inline";
+                document.getElementById('info1').style.display="none";
+            }
+            waypoints[i].reportValidity();
+            return;
+        }
+    }
+    map = new google.maps.Map(document.getElementById('map-canvas'), {disableDefaultUI: true});
+  directionsService = new google.maps.DirectionsService;
+  directionsDisplay = new google.maps.DirectionsRenderer;
+  directionsDisplay.setMap(null);
+  directionsDisplay.set('directions',null);
+  directionsDisplay.setMap(map);
+  var waypts = [];
+  for (var i=0;i<waypoints.length;i++){
+      var way= waypoints[i];
+      waypts.push({
+          location : way.value,
+          stopover : true
+      });
+  }
+  //console.log("WAYPOINTS");
+  //console.log(waypts);
+  directionsService.route({
+          origin: document.getElementById('id_ciudad_origen').value,
+          destination: document.getElementById('id_ciudad_destino').value,
+          waypoints: waypts,
+          optimizeWaypoints: false,
+          travelMode: 'DRIVING'
+        }, function(response, status) {
+          if (status === 'OK') {
+            directionsDisplay.setDirections(response);
+            var route = response.routes[0];
+
+          } else {
+            window.alert('Ha ocurrido un error, verifique su conexion a internet e intente nuevamente');
+          }
+        });
+    modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+
+// AQUI VEO LA GENERACION DE TARIFAS
+
+// Get the modal
+var tarmodal = document.getElementById("tarModal");
+
+// Get the button that opens the modal
+var tarbtn = document.getElementById("tarBtn");
+
+// Get the <span> element that closes the modal
+var tarspan = document.getElementById("tarClose");
+
+// When the user clicks the button, open the modal
+tarbtn.onclick = function() {
+    var origen = document.getElementById('id_ciudad_origen');
+    var destino = document.getElementById('id_ciudad_destino');
+    var tarifa = document.getElementById('id_tarifa_por_kilometro');
+    if(!origen.checkValidity() || !destino.checkValidity()|| !tarifa.checkValidity()){
+        if(document.getElementById('info1').style.display=="none"){
+            document.getElementById('info1').style.display="inline";
+            document.getElementById('info2').style.display="none";
+        }
+        origen.reportValidity();
+        destino.reportValidity();
+        tarifa.reportValidity();
+        return;
+    }
+    for (var i=0;i<waypoints.length;i++){
+        if(!waypoints[i].checkValidity()){
+            if(document.getElementById('info2').style.display=="none"){
+                document.getElementById('info2').style.display="inline";
+                document.getElementById('info1').style.display="none";
+            }
+            waypoints[i].reportValidity();
+            return;
+        }
+    }
+  directionsService = new google.maps.DirectionsService;
+  var waypts = [];
+  for (var i=0;i<waypoints.length;i++){
+      var way= waypoints[i];
+
+      waypts.push({
+          location : way.value,
+          stopover : true
+      });
+  }
+  var pesos_kilometro = parseFloat(tarifa.value);
+  var contenedor = document.getElementById("tarModal").children[0];
+
+  contenedor.setAttribute("style", "text-align:center");
+  contenedor.setAttribute("style", "margin:auto");
+
+  var tabla = document.createElement("table");
+  tabla.setAttribute("style", "text-align:center");
+  tabla.setAttribute("style", "margin:auto");
+  tabla.setAttribute("border", "1");
+
+  var tblbody = document.createElement("tbody");
+  var primera_hilera = document.createElement("thead");
+  var hilera = document.createElement("tr");
+    hilera.class = "table100-head";
+    var celda1 = document.createElement("td");
+    celda1.setAttribute("style", "columns:2");
+    celda1.setAttribute("style", "text-align: center");
+    var textocelda1 = document.createTextNode("Inicio del tramo");
+    celda1.innerHTML = "Inicio del tramo";
+    hilera.appendChild(celda1);
+
+    var celda2 = document.createElement("td");
+    celda2.setAttribute("style", "columns:2");
+    celda2.setAttribute("style", "text-align: center");
+    var textocelda2 = document.createTextNode("Fin del tramo");
+    celda2.appendChild(textocelda2);
+    hilera.appendChild(celda2);
+
+    var celda3 = document.createElement("td");
+    celda3.setAttribute("style", "columns:2");
+    celda3.setAttribute("style", "text-align: center");
+    var textocelda3 = document.createTextNode("Tarifa");
+    celda3.appendChild(textocelda3);
+    hilera.appendChild(celda3);
+
+    primera_hilera.appendChild(hilera);
+
+    tabla.append(primera_hilera);
+  for(var i=0;i<contenedor.children.length;i++){
+      var child = contenedor.children[i];
+      if(child.id!="tarClose" && child.className!="no-borrar"){
+          contenedor.removeChild(child);
+          i--;
+      }
+  }
+  directionsService.route({
+          origin: document.getElementById('id_ciudad_origen').value,
+          destination: document.getElementById('id_ciudad_destino').value,
+          waypoints: waypts,
+          optimizeWaypoints: false,
+          travelMode: 'DRIVING'
+        }, function(response, status) {
+          if (status === 'OK') {
+            var route = response.routes[0];
+
+            var legs = route.legs;
+            for(var i=0;i<legs.length;i++){
+                leg = legs[i];
+                var str_inicio = leg.start_address;
+                str_inicio = str_inicio.slice(0,str_inicio.lastIndexOf(","));
+                str_inicio = str_inicio.slice(0,str_inicio.lastIndexOf(","));
+                str_inicio = str_inicio.slice(str_inicio.lastIndexOf(",")+1,str_inicio.length);
+                var str_final= leg.end_address;
+                str_final= str_final.slice(0,str_final.lastIndexOf(","));
+                str_final = str_final.slice(0,str_final.lastIndexOf(","));
+                str_final = str_final.slice(str_final.lastIndexOf(",")+1,str_final.length);
+                var costo = Math.floor(leg.distance.value/1000*pesos_kilometro);
+                //var nuevo = document.createElement("p");
+                var hilera = document.createElement("tr");
+                var celda1 = document.createElement("td"),celda2 = document.createElement("td"),celda3 = document.createElement("td");
+
+                celda1.setAttribute("style", "columns:2");
+                celda1.setAttribute("style", "text-align: center");
+
+                celda2.setAttribute("style", "columns:2");
+                celda2.setAttribute("style", "text-align: center");
+
+                celda3.setAttribute("style", "columns:2");
+                celda3.setAttribute("style", "text-align: center");
+
+                celda1.innerHTML = str_inicio;
+                celda2.innerHTML = str_final;
+                celda3.innerHTML = "$" + costo.toLocaleString();
+
+                celda1.class = "column1";
+                celda2.class = "column2";
+                celda3.class = "column3";
+
+                hilera.appendChild(celda1);
+                hilera.appendChild(celda2);
+                hilera.appendChild(celda3);
+
+                hilera.setAttribute("border", "1");
+                tblbody.appendChild(hilera);
+                //nuevo.innerHTML=str_inicio+"->"+str_final+" $"+costo.toLocaleString();
+                //tabla.appendChild(tblbody);
+                //contenedor.appendChild(tabla);
+            }
+          } else {
+            window.alert('Ha ocurrido un error, verifique su conexion a internet e intente nuevamente' );
+          }
+        });
+    tabla.appendChild(tblbody);
+    contenedor.appendChild(tabla);
+  contenedor.style.textAlign = "center";
+    tarmodal.style.display = "block";
+}
+
+
+
+// When the user clicks on <span> (x), close the modal
+tarspan.onclick = function() {
+  tarmodal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == tarmodal) {
+    tarmodal.style.display = "none";
+  }
+}
+
+
+
+</script>
+
+    <script language="JavaScript" type="text/javascript">
+        var cont = 1;
+        function elemento_file(x){
+        var divele=document.getElementById("elementos");
+        if(x==1){
+        if(divele.lastChild){
+            divele.removeChild(divele.lastChild);
+            divele.removeChild(divele.lastChild);
+            divele.removeChild(divele.lastChild);
+            divele.removeChild(divele.lastChild);
+            divele.removeChild(divele.lastChild);
+            divele.removeChild(divele.lastChild);
+            divele.removeChild(divele.lastChild);
+            }
+            waypoints.pop();Title
+        }
+        else {
+            salto=document.createElement("br");
+            puesto=document.createTextNode("Parada ");
+            ele=document.createElement("input");
+            ele.required=true;
+            ele.id = ele.id.concat("lugar"+cont.toString());
+            separador = document.createElement("div");
+            separador.className="horizontalgap";
+            separador.style.cssFloat="left";
+            separador.style.width="10px";
+            separador.style.overflow="hidden";
+            separador.style.height="1px";
+            puesto2=document.createTextNode(" Hora de llegada ");
+            ele2=document.createElement("input");
+            ele2.id = ele2.id.concat("hora"+cont.toString());
+            ele2.type="datetime-local";
+            tiempo_inicio = document.getElementById("id_tiempo_inicio").value;
+            if(tiempo_inicio){
+                ele2.value = tiempo_inicio;
+            }
+            cont= cont+1;
+            separacion=document.createElement("hr");
+            ele.type="text";
+            ele.name="lugar"+cont.toString();
+            ele2.name="hora"+cont.toString();
+            divele.appendChild(puesto);
+            divele.appendChild(ele);
+            divele.appendChild(separador);
+            divele.appendChild(puesto2);
+            divele.appendChild(ele2);
+            divele.appendChild(salto);
+            divele.appendChild(separacion);
+            autocompletefy(ele.id);
+            waypoints.push(ele);
+            }
+        }
+</script>
+<script language="JavaScript" type="text/javascript">
+    function next_form(){
+        var form1 = document.getElementById("info1");
+        var  form2 = document.getElementById("info2");
+        var sgte = document.getElementById("boton1");
+        var formulario_lleno = true;
+        form2.style.display = "inline";
+        form1.style.display = "none";
+    }
+
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAylbstTbZrZsfpt5Z3erIHRO2W5TKDsR8&libraries=places&callback=onLoaded" async defer></script>
+<script language="JavaScript" type="text/javascript">
+    function prev_form(){
+        form1 = document.getElementById("info1");
+        form2 = document.getElementById("info2");
+        form1.style.display = "inline";
+        form2.style.display = "none";
+    }
+</script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script>
+    var map;
+    var waypoints = [];
+    function validarInput(lat_input,lon_input){
+        var geocoder = new google.maps.Geocoder();
+            geocoder.geocode(
+            {   componentRestrictions:{
+                    country: "cl"
+                },
+                "address": location_input.value
+            }, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK)
+                {
+                    var resultado = results[0];
+                    var check = false;
+                    lat_input.value=resultado.geometry.location.lat;
+                    Lon_input.value=resultado.geometry.location.lon;
+                    location_input.value = resultado.formatted_address;
+                    for(const wea of resultado.address_components){
+                        if(wea.types[0]=="administrative_area_level_3"){
+                            check=true;
+                        }
+                    }
+                    if(!check){
+                        location_input.value="";
+                    }
+                }
+                    else
+                {
+                    location_input.value="";
+                }
+            });
+    }
+
+    function autocompletefy(element_id){
+        var location_input = document.getElementById(element_id);
+        var lat_input = document.getElementById('id_lat');
+        var lon_input = document.getElementById('id_lon');
+        var options = {
+          types: ['address'],
+          componentRestrictions: {country: "chl"}
+        };
+        var autocomplete = new google.maps.places.Autocomplete(location_input,options);
+        location_input.addEventListener("change", function(){
+            validarInput(location_input);
+        });
+        lupa = document.createElement("i");
+        lupa.className = "icon fa-search my-hoverable-icon";
+
+        lupa.style.marginLeft="10px";
+
+        eldiv = document.createElement("div");
+        location_input.parentElement.insertBefore(eldiv,location_input.nextSibling);
+        eldiv.appendChild(location_input);
+        location_input.parentElement.insertBefore(lupa,location_input.nextSibling);
+
+        location_input.style.display="inline";
+        var ancho = lupa.offsetWidth    ;
+        location_input.addEventListener("click",function(){
+           validarInput(lat_input,lon_input);
+        });
+
+    }
+    var onLoaded = function() {
+        autocompletefy('id_calle');
+
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
+        setTimeout(function () {
+            var borrar = document.getElementById("mensaje-a-borrar");
+            if(borrar!=null){
+                borrar.parentElement.removeChild(borrar);
+            }
+        },5000)
+    }
+</script>
+
+
+{% endblock %}

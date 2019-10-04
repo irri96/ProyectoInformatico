@@ -4,7 +4,7 @@ from .views import Inicio
 
 urlpatterns = [
     path('', Inicio.home, name='home'),
-    path('login'),
-    path('registro/conductor',Inicio.RegistroConductor),
-    path('registro/arrendador',Inicio.RegistroArrendador),
+
+    #path('registro/conductor',Inicio.RegistroConductor),
+    #   path('registro/arrendador',Inicio.RegistroArrendador),
 ]
