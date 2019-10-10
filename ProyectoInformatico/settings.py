@@ -25,7 +25,7 @@ SECRET_KEY = '7@nek54jdn=pf=k+66lo=!h2wz7-s759=tr$kzwhzq=m!#qje-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['proyectoinformatico.herokuapp.com','127.0.0.1']
+ALLOWED_HOSTS = ['airribarra.inf.udec.cl','proyectoinformatico.herokuapp.com','127.0.0.1']
 
 
 # Application definition
