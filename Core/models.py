@@ -3,10 +3,9 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     #se heredan los campos basicos (nombre, email, pass, etc) de AbstractUser
-    es_conductor = models.fields.BooleanField()
-    es_arrendador = models.fields.BooleanField()
+    es_conductor = models.fields.BooleanField(default=False)
+    es_arrendador = models.fields.BooleanField(default=False)
     rut = models.fields.CharField(max_length=12,unique=True)
-    saldo = models.fields.IntegerField()
 
 class Conductor(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,primary_key=True)
