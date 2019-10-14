@@ -38,14 +38,22 @@
       {% endif %}
     </ul>
       {% if user.is_authenticated %}
-        <form class="form-inline my-2 my-lg-0">
-          <input class="form-control mr-sm-2" type="search" placeholder="Buscar" aria-label="Search">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Buscar</button>
-        </form>
+          <button type="button" class="btn btn-outline-danger" onclick="logout()">Log Out</button>
+      {% else %}
+          <button type="button" class="btn btn-outline-primary mr-2">Log in</button>
+          <button type="button" class="btn btn-outline-success" onclick="registrarme()">Regístrate</button>
       {% endif %}
   </div>
 </nav>
     {% block content %}
     {% endblock %}
+  <script>
+      function logout(){
+          location.href = "{% url 'salir' %}";
+      }
+      function registrarme(){
+          location.href = "{% url 'registrarme' %}";
+      }
+  </script>
   </body>
 </html>

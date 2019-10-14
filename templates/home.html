@@ -2,15 +2,11 @@
 
 {% block content %}
     {% if user.is_authenticated %}
-    <h1>Bienvenido {{ user.rut}}</h1>
+    <h1>Bienvenido {{ user.first_name}} {{ user.last_name }}</h1>
     {%  else %}
 
-       <h2>No estás registrado! </h2><button type="button" class="btn btn-secondary" onclick="registrarse()">Regístrate</button>
-        <script>
-            function registrarse() {
-                //location.href = "www.youtube.com"; url para registrarse
-            }
-        </script>
+       <h2>No estás registrado! </h2>
+
     {% endif %}
 {% endblock %}
 

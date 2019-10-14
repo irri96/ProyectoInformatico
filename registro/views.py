@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login,  get_user_model
 from django.shortcuts import render, redirect
 from registro.forms import SignUpForm
+from django.contrib.auth import logout
 from Core.models import User
 User = get_user_model()
 
@@ -17,3 +18,10 @@ def signup(request):
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
+
+def salir(request):
+    logout(request)
+    return redirect('home')
+
+def registrarme(request):
+    return redirect('CrearCuenta')
