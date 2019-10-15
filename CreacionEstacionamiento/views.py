@@ -30,3 +30,6 @@ def ver_estacionamientos(request,id):
     #       estacionamientos.append(estacionamiento)
     #
     return render(request, "ver_estacionamientos.html", {"usuario": user})
+
+def parking(request):
+    return render(request, "ver_estacionamientos.html")
