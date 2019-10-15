@@ -1,2 +1,9 @@
 # Project exclude paths
 /venv/
+
+#django
+*.log
+*.pyc
+__pycache__/
+.env
+db.sqlite3
