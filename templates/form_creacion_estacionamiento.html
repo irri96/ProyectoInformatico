@@ -77,7 +77,7 @@
          <div id="info1">
 
             {{ form}}
-
+        <input type="submit" class="button primary" value="Listo">
          </div>
          <div id="info2" style="display: none">
 
@@ -177,7 +177,7 @@
     }
 
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDt-Ud13FeFMa3eQXoaqQOp8ealZ0tPKQE&libraries=places&callback=onLoaded" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC75CYqTihAVXLfxiYr2VzmaqZnQSBDgEU&libraries=places&callback=onLoaded" async defer></script>
 <script language="JavaScript" type="text/javascript">
     function prev_form(){
         form1 = document.getElementById("info1");
@@ -192,6 +192,8 @@
     var waypoints = [];
     function validarInput(lat_input,lon_input){
         var location_input = document.getElementById("id_calle");
+        lon_input = document.getElementById("id_lon");
+        lat_input = document.getElementById("id_lat");
         var geocoder = new google.maps.Geocoder();
             geocoder.geocode(
             {   componentRestrictions:{
@@ -203,8 +205,10 @@
                 {
                     var resultado = results[0];
                     var check = false;
-                    lat_input.value=resultado.geometry.location.lat;
-                    Lon_input.value=resultado.geometry.location.lon;
+                    lat_input.value=resultado.geometry.location.lat();
+                    lat_input.value=lat_input.value.substr(0,10);
+                    lon_input.value=resultado.geometry.location.lng();
+                    lon_input.value=lon_input.value.substr(0,10);
                     location_input.value = resultado.formatted_address;
                     for(const wea of resultado.address_components){
                         if(wea.types[0]=="administrative_area_level_3"){
